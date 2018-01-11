@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
-public class ArrayList<T>
+public class ArrayList<T> : IEnumerable<T>
 {
     private T[] arr;
 
@@ -32,7 +34,7 @@ public class ArrayList<T>
 
     public void Add(T item)
     {
-        if(this.Count + 1 >= this.Capacity)
+        if(this.Count + 1 > this.Capacity)
         {
             this.Grow();
         }
@@ -84,5 +86,18 @@ public class ArrayList<T>
         this.Capacity /= 2;
         Array.Copy(this.arr, shrinkedArray, this.Count);
         this.arr = shrinkedArray;
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        foreach (var item in this.arr)
+        {
+            yield return item;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return this.GetEnumerator();
     }
 }
