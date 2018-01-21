@@ -15,6 +15,7 @@ namespace _03_Linear_Data_Structures_Exercise
             // LongestSubsequence();
             // RemoveOddOccurences();
             // CountOfOccurences();
+            // DistanceInLabyrinth();
         }
 
         public static void SumAndAverage()
@@ -31,18 +32,50 @@ namespace _03_Linear_Data_Structures_Exercise
 
         public static void LongestSubsequence()
         {
-            var input = Console.ReadLine().Split().Select(int.Parse).ToList<int>();
-            var counterSubsequence = 0;
-            var subsequenceNumber = input[0];
+            var input = Console.ReadLine().Split().Select(int.Parse).ToArray();
+            var subsequencesDict = new Dictionary<int, int>();
 
-            for (int i = 0; i < input.Count; i++)
+            for (int i = 0; i < input.Length - 1; i++)
             {
-                
+                if(input[i] == input[i + 1])
+                {
+                    if (!subsequencesDict.ContainsKey(input[i + 1]))
+                    {
+                        subsequencesDict.Add(input[i + 1], 2);
+                    }
+                    else
+                    {
+                        subsequencesDict[input[i + 1]]++;
+                    }
+                }
             }
+            if(subsequencesDict.Count == 0)
+            {
+                Console.WriteLine(input[0]);
+            }
+            else
+            {
+                var firstKey = 0;
+                foreach (var kvp in subsequencesDict.OrderByDescending(x => x.Value))
+                {
+                    firstKey = kvp.Key;
+                    break;
+                }
+                var number = subsequencesDict[firstKey];
+
+                var subsequence = new List<int>();
+                for (int i = 0; i < number; i++)
+                {
+                    subsequence.Add(firstKey);
+                }
+
+                Console.WriteLine(String.Join(" ", subsequence));
+            }
+
         }
 
         public static void RemoveOddOccurences()
-        {
+            {
             var input = Console.ReadLine().Split().Select(int.Parse).ToList<int>();
             var numbersToRemove = new List<int>();
 
@@ -93,6 +126,91 @@ namespace _03_Linear_Data_Structures_Exercise
             foreach (var kvp in occurences.OrderBy(element => element.Key))
             {
                 Console.WriteLine($"{kvp.Key} -> {kvp.Value} times");
+            }
+        }
+
+        public static void DistanceInLabyrinth()
+        {
+            int[,] matrix;
+            int matrixSize;
+
+            matrixSize = int.Parse(Console.ReadLine());
+
+            int starX = 0;
+            int starY = 0;
+
+            matrix = new int[matrixSize, matrixSize];
+
+            // Fill matrix
+            for (int i = 0; i < matrixSize; i++)
+            {
+                string input = Console.ReadLine();
+                for (int j = 0; j < input.Length; j++)
+                {
+                    if (input[j].Equals('*'))
+                    {
+                        matrix[i, j] = -1;
+                        starX = i;
+                        starY = j;
+                    }
+                    else if (input[j].Equals('x'))
+                    {
+                        matrix[i, j] = -2;
+                    }
+                    else
+                    {
+                        matrix[i, j] = 0;
+                    }
+                }
+            }
+
+            // Main
+            fill(starX, starY, 0);
+
+            // Print Matrix
+            for (int i = 0; i < matrixSize; i++)
+            {
+                for (int j = 0; j < matrixSize; j++)
+                {
+                    if (matrix[i, j] == -1)
+                    {
+                        Console.Write('*');
+                    }
+                    else if (matrix[i, j] == -2)
+                    {
+                        Console.Write('x');
+                    }
+                    else if (matrix[i, j] == 0)
+                    {
+                        Console.Write('u');
+                    }
+                    else
+                    {
+                        Console.Write(matrix[i, j]);
+                    }
+                }
+
+                Console.WriteLine();
+            }
+
+            void fill(int x, int y, int d)
+            {
+                if (matrix[x, y] == 0 || d == 0 || matrix[x, y] > d)
+                {
+                    if (d > 0)
+                    {
+                        matrix[x, y] = d;
+                    }
+
+                    if (x < matrixSize - 1) fill(x + 1, y, d + 1);
+                    if (x > 0) fill(x - 1, y, d + 1);
+                    if (y < matrixSize - 1) fill(x, y + 1, d + 1);
+                    if (y > 0) fill(x, y - 1, d + 1);
+                }
+                else
+                {
+                    return;
+                }
             }
         }
     }
