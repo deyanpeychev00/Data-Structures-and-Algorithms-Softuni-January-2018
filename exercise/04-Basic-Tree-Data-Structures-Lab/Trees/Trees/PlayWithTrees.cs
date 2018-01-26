@@ -21,9 +21,9 @@ public class PlayWithTrees
         Console.Write("Tree nodes:");
         tree.Each(c => Console.Write(" " + c));
         Console.WriteLine();
-
+       
         Console.WriteLine();
-
+       
         var binaryTree =
             new BinaryTree<string>("*",
                 new BinaryTree<string>("+",
@@ -32,14 +32,14 @@ public class PlayWithTrees
                 new BinaryTree<string>("-",
                     new BinaryTree<string>("9"),
                     new BinaryTree<string>("6")));
-
+       
         Console.WriteLine("Binary tree (indented, pre-order):");
         binaryTree.PrintIndentedPreOrder();
-
+       
         Console.Write("Binary tree nodes (in-order):");
         binaryTree.EachInOrder(c => Console.Write(" " + c));
         Console.WriteLine();
-
+       
         Console.Write("Binary tree nodes (post-order):");
         binaryTree.EachPostOrder(c => Console.Write(" " + c));
         Console.WriteLine();

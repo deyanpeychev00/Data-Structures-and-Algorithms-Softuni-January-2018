@@ -2,22 +2,57 @@
 
 public class BinaryTree<T>
 {
+    public T Value { get; set; }
+    public BinaryTree<T> Left { get; private set; }
+    public BinaryTree<T> Right { get; private set; }
+
+
     public BinaryTree(T value, BinaryTree<T> leftChild = null, BinaryTree<T> rightChild = null)
     {
+        this.Value = value;
+        this.Left = leftChild;
+        this.Right = rightChild;
     }
 
     public void PrintIndentedPreOrder(int indent = 0)
     {
-        throw new NotImplementedException();
+        Console.WriteLine($"{new string(' ', indent * 2)}{this.Value}");
+        if(this.Left != null)
+        {
+            this.Left.PrintIndentedPreOrder(indent + 1);
+        }
+        if (this.Right != null)
+        {
+            this.Right.PrintIndentedPreOrder(indent + 1);
+        }
     }
 
     public void EachInOrder(Action<T> action)
     {
-        throw new NotImplementedException();
+        if(this.Left != null)
+        {
+            this.Left.EachInOrder(action);
+        }
+
+        action(this.Value);
+
+        if(this.Right != null)
+        {
+            this.Right.EachInOrder(action);
+        }
     }
 
     public void EachPostOrder(Action<T> action)
     {
-        throw new NotImplementedException();
+        if (this.Left != null)
+        {
+            this.Left.EachPostOrder(action);
+        }
+        if (this.Right != null)
+        {
+            this.Right.EachPostOrder(action);
+        }
+
+        action(this.Value);
     }
 }
