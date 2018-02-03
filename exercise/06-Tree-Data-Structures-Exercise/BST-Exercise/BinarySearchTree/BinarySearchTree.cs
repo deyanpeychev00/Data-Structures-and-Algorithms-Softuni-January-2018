@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class BinarySearchTree<T> : IBinarySearchTree<T> where T : IComparable
 {
     private Node root;
-    private int ElementsCount;
     private List<Node> ElementsList;
 
     private Node FindElement(T element)
@@ -57,10 +56,8 @@ public class BinarySearchTree<T> : IBinarySearchTree<T> where T : IComparable
             node.Right = this.Insert(element, node.Right);
         }
 
-        if (!this.ElementsList.Contains(node))
-        {
-            this.ElementsList.Add(node);
-        }
+        node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
+
         return node;
     }
 
@@ -108,15 +105,11 @@ public class BinarySearchTree<T> : IBinarySearchTree<T> where T : IComparable
 
     public BinarySearchTree()
     {
-        this.ElementsList = new List<Node>();
+           this.ElementsList = new List<Node>();
     }
 
     public void Insert(T element)
     {
-        if (!this.Contains(element))
-        {
-            this.ElementsCount++;
-        }
         this.root = this.Insert(element, this.root);
     }
 
@@ -143,28 +136,22 @@ public class BinarySearchTree<T> : IBinarySearchTree<T> where T : IComparable
     {
         if (this.root == null)
         {
-            return;
+            throw new InvalidOperationException();
+        }
+        this.root = this.DeleteMin(this.root);
+    }
+
+    private Node DeleteMin(Node node)
+    {
+        if (node.Left == null)
+        {
+            return node.Right;
         }
 
-        Node current = this.root;
-        Node parent = null;
-        while (current.Left != null)
-        {
-            parent = current;
-            current = current.Left;
-        }
+        node.Left = this.DeleteMin(node.Left);
+        node.Count = 1 + this.Count(node.Right) + this.Count(node.Left);
 
-        if (parent == null)
-        {
-            RemoveNodeFromList(this.root);
-            this.root = this.root.Right;
-        }
-        else
-        {
-            RemoveNodeFromList(parent.Left);
-            parent.Left = current.Right;
-        }
-        this.ElementsCount--;
+        return node;
     }
 
     public IEnumerable<T> Range(T startRange, T endRange)
@@ -176,184 +163,195 @@ public class BinarySearchTree<T> : IBinarySearchTree<T> where T : IComparable
         return queue;
     }
 
-    public void Delete(T element)
-    {
-        PreorderTraversal(this.root, element);
-        this.ElementsCount--;
-        this.RemoveNodeFromList(new Node(element));
-    }
-
-    private void PreorderTraversal(Node Root, T element)
-    {
-        if (Root == null)
-        {
-            return;
-        }
-        Node currentLeft;
-        Node currentRight;
-        if (Root != null)
-        {
-            if (Root.Value.CompareTo(element) == 0)
-            {
-
-                currentLeft = Root.Left;
-                currentRight = Root.Right;
-                Root = null;
-                TraverseSubTree(currentLeft);
-                TraverseSubTree(currentRight);
-                return;
-            }
-        }
-        PreorderTraversal(Root.Left, element);
-        PreorderTraversal(Root.Right, element);
-    }
-
-    private void TraverseSubTree(Node Root)
-    {
-
-        if (Root == null)
-        {
-            return;
-        }
-        if (Root != null)
-        {
-            this.Insert(Root.Value);
-        }
-        TraverseSubTree(Root.Left);
-        TraverseSubTree(Root.Right);
-    }
-
     public void DeleteMax()
     {
         if (this.root == null)
         {
-            return;
+            throw new InvalidOperationException();
         }
 
-        Node current = this.root;
-        Node parent = null;
-        while (current.Right != null)
+        this.root = this.DeleteMax(this.root);
+    }
+
+    private Node DeleteMax(Node node)
+    {
+        if (node.Right == null)
         {
-            parent = current;
-            current = current.Right;
+            return node.Left;
         }
 
-        if (parent == null)
-        {
-            RemoveNodeFromList(this.root);
-            this.root = this.root.Left;
-        }
-        else
-        {
-            RemoveNodeFromList(parent.Right);
-            parent.Right = current.Left;
-        }
-        this.ElementsCount--;
+        node.Right = this.DeleteMax(node.Right);
+        node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
+
+        return node;
     }
 
     public int Count()
     {
-        return this.ElementsCount;
+        return this.Count(this.root);
+    }
+
+    private int Count(Node node)
+    {
+        if (node == null)
+        {
+            return 0;
+        }
+        return node.Count;
     }
 
     public int Rank(T element)
     {
-        for (int i = 0; i < this.ElementsList.Count; i++)
+        return this.Rank(this.root, element);
+    }
+
+    private int Rank(Node node, T element)
+    {
+        if (node == null)
         {
-            if (this.ElementsList[i].Value.CompareTo(element) == 0)
-            {
-                return i;
-            }
+            return 0;
         }
 
-        return 0;
+        int compare = node.Value.CompareTo(element);
+
+        if (compare > 0)
+        {
+            return this.Rank(node.Left, element);
+        }
+        if (compare < 0)
+        {
+            return 1 + this.Count(node.Left) + this.Rank(node.Right, element);
+        }
+
+        return this.Count(node.Left);
     }
 
     public T Select(int rank)
     {
-
-        var sortedList = this.TransferListValues();
-        if (rank < 0 || rank >= sortedList.Count)
+        if(rank < 0 || rank > this.Count())
         {
             throw new InvalidOperationException();
         }
-        return sortedList[rank];
+        CopyTreeToList(this.root);
+
+        List<T> TreeValues = GetTreeValues();
+        // Console.WriteLine(String.Join(" ", TreeValues));
+
+        return TreeValues[rank];
+    }
+
+    private List<T> GetTreeValues()
+    {
+        CopyTreeToList(this.root);
+        List<T> values = new List<T>();
+        foreach (var node in this.ElementsList)
+        {
+            values.Add(node.Value);
+        }
+        values.Sort();
+        return values;
+    }
+
+    private void CopyTreeToList(Node root)
+    {
+        if(root == null)
+        {
+            return;
+        }
+        CopyTreeToList(root.Left);
+        CopyTreeToList(root.Right);
+
+        if (!this.ElementsList.Contains(root))
+        {
+            this.ElementsList.Add(root);
+        }
+
     }
 
     public T Ceiling(T element)
     {
+        CopyTreeToList(this.root);
+        List<T> TreeValues = GetTreeValues();
+        int elementIndex = TreeValues.IndexOf(element);
 
-        var sortedList = this.TransferListValues();
-        var elementIndex = sortedList.IndexOf(element);
-
-        if (elementIndex == -1)
+        if ( elementIndex == -1 || elementIndex+1 >= TreeValues.Count)
         {
             throw new InvalidOperationException();
         }
 
-        if (elementIndex == sortedList.Count - 1)
-        {
-            return sortedList[sortedList.Count - 1];
-        }
-        else
-        {
-            return sortedList[elementIndex + 1];
-        }
+        return TreeValues[elementIndex + 1];
     }
 
     public T Floor(T element)
     {
+        CopyTreeToList(this.root);
+        List<T> TreeValues = GetTreeValues();
+        int elementIndex = TreeValues.IndexOf(element);
 
-        var sortedList = this.TransferListValues();
-        var elementIndex = sortedList.IndexOf(element);
-
-        if (elementIndex == -1)
+        if (elementIndex == -1 || elementIndex - 1 < 0)
         {
             throw new InvalidOperationException();
         }
 
-        if (elementIndex == 0)
+        return TreeValues[elementIndex -1];
+    }
+
+    public void Delete(T element)
+    {
+        if (this.Count(this.root) == 0 || !this.Contains(element))
         {
-            return sortedList[0];
+            throw new InvalidOperationException();
         }
+        this.root = this.Delete(this.root, element);
+    }
+
+    private Node Delete(Node node,T element)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+        int compare = node.Value.CompareTo(element);
+
+        // Traverse tree until the targetted element is found
+        if (compare > 0)
+        {
+            node.Left = this.Delete(node.Left, element);
+        }
+        else if(compare < 0)
+        {
+            node.Right = this.Delete(node.Right, element);
+        }
+        // Remove targetted element
         else
         {
-            return sortedList[elementIndex - 1];
-        }
-    }
-
-    private void RemoveNodeFromList(Node node)
-    {
-        for (int i = 0; i < this.ElementsList.Count; i++)
-        {
-            if (this.ElementsList[i].Value.CompareTo(node.Value) == 0)
+            if(node.Left == null)
             {
-                this.ElementsList.RemoveAt(i);
-                break;
+                return node.Right;
             }
+            if(node.Right == null)
+            {
+                return node.Left;
+            }
+            Node leftMost = this.FindSubtreeLeftmost(node.Right);
+            node.Value = leftMost.Value;
+            node.Right = this.Delete(node.Right, leftMost.Value);
         }
+
+        node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
+        return node;
     }
 
-    public void DisplayElementsList()
+    private Node FindSubtreeLeftmost(Node node)
     {
-        var output = new List<T>();
-        foreach (var node in this.ElementsList)
+        Node current = node;
+        while(current.Left != null)
         {
-            output.Add(node.Value);
+            current = current.Left;
         }
-        output.Sort();
-        Console.WriteLine(String.Join(" ", output));
-    }
+       
 
-    private List<T> TransferListValues()
-    {
-        var sortedList = new List<T>();
-        foreach (var element in this.ElementsList)
-        {
-            sortedList.Add(element.Value);
-        }
-        sortedList.Sort();
-        return sortedList;
+        return current;
     }
 
     private class Node
@@ -363,7 +361,8 @@ public class BinarySearchTree<T> : IBinarySearchTree<T> where T : IComparable
             this.Value = value;
         }
 
-        public T Value { get; }
+        public T Value { get; set; }
+        public int Count { get; set; }
         public Node Left { get; set; }
         public Node Right { get; set; }
     }
@@ -374,50 +373,38 @@ public class Launcher
     public static void Main(string[] args)
     {
         BinarySearchTree<int> bst = new BinarySearchTree<int>();
-
-        bst.Insert(1);
-        bst.Insert(3);
-        bst.Insert(4);
+        bst.Insert(10);
         bst.Insert(5);
+        bst.Insert(3);
+        bst.Insert(1);
+        bst.Insert(4);
         bst.Insert(8);
         bst.Insert(9);
-        bst.Insert(10);
         bst.Insert(37);
         bst.Insert(39);
         bst.Insert(45);
-        bst.DisplayElementsList();
+        bst.Insert(6);
 
-        // bst.DeleteMin();
-        // Console.WriteLine("Delete MIN..");
-        // bst.DisplayElementsList();
-        // Console.WriteLine("Count: " + bst.Count());
-        // Console.WriteLine();
+        Console.WriteLine(bst.Rank(8));
+        Console.WriteLine();
         bst.DeleteMax();
-        Console.WriteLine("Delete MAX..");
-        // bst.DisplayElementsList();
-        // Console.WriteLine("Count: " + bst.Count());
-        // Console.WriteLine();
-
-        Console.WriteLine("Adding already existing element..");
-        bst.Insert(37); // element already exists, count doesn't increment
-        // bst.EachInOrder(Console.WriteLine);
-        Console.WriteLine("Count: " + bst.Count());
-        Console.WriteLine();
-
-        Console.WriteLine("Rank(8) -> Should return 4    | Returns: " + bst.Rank(8));
-        Console.WriteLine();
-        Console.WriteLine("Select(4) -> Should return 8  | Returns: " + bst.Select(4));
-        Console.WriteLine();
-        Console.WriteLine("Ceiling(4) -> Should return 5 | Returns: " + bst.Ceiling(4));
-        Console.WriteLine();
-        Console.WriteLine("Floor(5) -> Should return 4   | Returns: " + bst.Floor(5));
-        Console.WriteLine();
-        Console.WriteLine("Count: " + bst.Count());
-        Console.WriteLine();
-        bst.Delete(37);
-        bst.DisplayElementsList();
-        Console.WriteLine("Count: " + bst.Count());
-        Console.WriteLine();
         bst.EachInOrder(Console.WriteLine);
+        Console.WriteLine();
+        Console.WriteLine(bst.Select(4));
+        Console.WriteLine();
+        Console.WriteLine(bst.Ceiling(37));
+        Console.WriteLine();
+        Console.WriteLine(bst.Floor(3));
+        Console.WriteLine();
+        List<int> values = new List<int>();
+        bst.EachInOrder(values.Add);
+        Console.WriteLine(string.Join(" ", values));
+        bst.Delete(5);
+
+        List<int> values2 = new List<int>();
+        bst.EachInOrder(values2.Add);
+        Console.WriteLine(string.Join(" ", values2));
+
+
     }
 }
