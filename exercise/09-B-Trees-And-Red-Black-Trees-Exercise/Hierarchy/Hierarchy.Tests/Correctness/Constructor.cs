@@ -1,6 +1,5 @@
 ﻿namespace Hierarchy.Tests.Correctness
 {
-    using Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

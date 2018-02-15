@@ -1,19 +1,17 @@
-﻿namespace Hierarchy.Tests
+﻿
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+[TestClass]
+public class BaseTest
 {
-    using Core;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    public IHierarchy<int> Hierarchy { get; private set; }
 
-    [TestClass]
-    public class BaseTest
+    public const int DefaultRootValue = 5;
+
+    [TestInitialize]
+    public void Initialize()
     {
-        public IHierarchy<int> Hierarchy { get; private set; }
-
-        public const int DefaultRootValue = 5;
-
-        [TestInitialize]
-        public void Initialize()
-        {
-            this.Hierarchy = new Hierarchy<int>(5);
-        }
+        this.Hierarchy = new Hierarchy<int>(5);
     }
 }
+
