@@ -5,6 +5,9 @@ public class AStar
 {
 
     private char[,] maze;
+    PriorityQueue<Node> pQueue = new PriorityQueue<Node>();
+    Dictionary<Node, Node> parents = new Dictionary<Node, Node>();
+    Dictionary<Node, int> gCost = new Dictionary<Node, int>(); // distance between start and current
 
     public AStar(char[,] map)
     {
@@ -21,9 +24,7 @@ public class AStar
 
     public IEnumerable<Node> GetPath(Node start, Node goal)
     {
-        PriorityQueue<Node> pQueue = new PriorityQueue<Node>();
-        Dictionary<Node, Node> parents = new Dictionary<Node, Node>();
-        Dictionary<Node, int> gCost = new Dictionary<Node, int>(); // distance between start and current
+
 
         gCost.Add(start, 0);
         parents.Add(start, null);
