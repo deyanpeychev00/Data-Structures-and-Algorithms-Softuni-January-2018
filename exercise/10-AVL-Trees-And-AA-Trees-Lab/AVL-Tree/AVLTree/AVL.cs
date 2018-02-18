@@ -45,6 +45,13 @@ public class AVL<T> where T : IComparable<T>
             node.Right = this.Insert(node.Right, item);
         }
 
+        node = this.Rebalance(node);
+
+        return node;
+    }
+
+    private Node<T> Rebalance(Node<T> node)
+    {
         node.Height = Math.Max(this.GetNodeHeight(node.Left), this.GetNodeHeight(node.Right)) + 1;
 
         // Balance AVL
