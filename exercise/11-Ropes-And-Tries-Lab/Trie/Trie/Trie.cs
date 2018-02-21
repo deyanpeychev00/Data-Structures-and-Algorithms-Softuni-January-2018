@@ -69,8 +69,28 @@ public class Trie<Value>
 
     private Node Insert(Node x, string key, Value val, int d)
     {
-       //ToDo: Create insert
-       throw new NotImplementedException();
+        if (x == null)
+        {
+            x = new Node();
+        }
+
+        if (d == key.Length)
+        {
+            x.val = val;
+            x.isTerminal = true;
+            return x;
+        }
+
+        Node node = null;
+        char c = key[d];
+
+        if (x.next.ContainsKey(c))
+        {
+            node = x.next[c];
+        }
+
+        x.next[c] = this.Insert(node, key, val, d + 1);
+        return x;
     }
 
     private void Collect(Node x, string prefix, Queue<string> results)
