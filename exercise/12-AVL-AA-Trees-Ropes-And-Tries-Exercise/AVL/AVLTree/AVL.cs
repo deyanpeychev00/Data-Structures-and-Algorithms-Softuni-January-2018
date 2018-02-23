@@ -23,14 +23,88 @@ public class AVL<T> where T : IComparable<T>
         this.root = this.Insert(this.root, item);
     }
 
-    public void Delete(int v)
+    public void Delete(T value)
     {
-        throw new NotImplementedException();
+        this.root = this.Delete(this.root, value);
+    }
+    private Node<T> Delete(Node<T> node, T value)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+
+        int compare = node.Value.CompareTo(value);
+
+        if (compare > 0)
+        {
+            node.Left = this.Delete(node.Left, value);
+        }
+        else if (compare < 0)
+        {
+            node.Right = this.Delete(node.Right, value);
+        }
+        else
+        {
+            if ((node.Left == null) || (node.Right == null))
+            {
+                Node<T> temp = null;
+                temp = node.Left ?? node.Right;
+
+                if (temp == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    node = temp;
+                }
+            }
+            else
+            {
+                Node<T> temp = this.FindMinNode(node.Right);
+                node.Value = temp.Value;
+                node.Right = this.Delete(node.Right, temp.Value);
+            }
+        }
+
+        node = this.Balance(node);
+        this.UpdateHeight(node);
+        return node;
+    }
+
+    private Node<T> FindMinNode(Node<T> node)
+    {
+        var current = node;
+        while (current.Left != null)
+        {
+            current = current.Left;
+        }
+
+        return current;
     }
 
     public void DeleteMin()
     {
-        throw new NotImplementedException();
+        this.root = this.DeleteMin(this.root);
+    }
+
+    private Node<T> DeleteMin(Node<T> node)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+
+        if (node.Left == null)
+        {
+            return node.Right;
+        }
+
+        node.Left = this.DeleteMin(node.Left);
+        node = this.Balance(node);
+        this.UpdateHeight(node);
+        return node;
     }
 
     public void EachInOrder(Action<T> action)
