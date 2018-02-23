@@ -5,11 +5,14 @@ using Wintellect.PowerCollections;
 public class FirstLastList<T> : IFirstLastList<T> where T : IComparable<T>
 {
 
+    private bool isSortedUp;
+    private bool isSortedDown;
     private List<T> list;
 
     public FirstLastList()
     {
         this.list = new List<T>();
+        isSortedDown = isSortedUp = false;
     }
 
     public int Count
@@ -52,25 +55,33 @@ public class FirstLastList<T> : IFirstLastList<T> where T : IComparable<T>
 
     public IEnumerable<T> Max(int count)
     {
-        var newList = performInsertionSort(this.list.ToArray());
-
-        Array.Sort(newList, (a,b) => a.CompareTo(b));
-
-        Array.Reverse(newList);
-
         CheckRange(count);
+        if (!isSortedDown)
+        {
+            this.list.Sort((a, b) => {
+                return b.CompareTo(a);
+            });
+
+            isSortedDown = true;
+        }
+      
 
         for (int i = 0; i < count; i++)
         {
-            yield return newList[i];
+            yield return this.list[i];
         }
     }
 
     public IEnumerable<T> Min(int count)
     {
-        this.list.Sort();
         CheckRange(count);
+        if (!isSortedUp)
+        {
+            this.list.Sort();
+            this.isSortedUp = true;
+        }
 
+  
         for (int i = 0; i < count; i++)
         {
             yield return this.list[i];
@@ -79,18 +90,7 @@ public class FirstLastList<T> : IFirstLastList<T> where T : IComparable<T>
 
     public int RemoveAll(T element)
     {
-        int countRemoved = 0;
-        for (int i = 0; i < this.list.Count; i++)
-        {
-            if(this.list[i].CompareTo(element) == 0)
-            {
-                this.list.RemoveAt(i);
-                countRemoved++;
-                i--;
-            }
-        }
-
-        return countRemoved;
+        return this.list.RemoveAll(x => x.CompareTo(element) == 0);
     }
 
     private void CheckRange(int count)
@@ -99,26 +99,5 @@ public class FirstLastList<T> : IFirstLastList<T> where T : IComparable<T>
         {
             throw new ArgumentOutOfRangeException();
         }
-    }
-
-    static T[] performInsertionSort(T[] inputarray)
-    {
-        for (int i = 0; i < inputarray.Length - 1; i++)
-        {
-            int j = i + 1;
-
-            while (j > 0)
-            {
-                if (inputarray[j - 1].CompareTo(inputarray[j]) > 0)
-                {
-                    T temp = inputarray[j - 1];
-                    inputarray[j - 1] = inputarray[j];
-                    inputarray[j] = temp;
-
-                }
-                j--;
-            }
-        }
-        return inputarray;
     }
 }
