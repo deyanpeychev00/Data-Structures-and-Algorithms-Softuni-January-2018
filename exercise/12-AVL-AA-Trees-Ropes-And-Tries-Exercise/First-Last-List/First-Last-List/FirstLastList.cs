@@ -4,46 +4,121 @@ using Wintellect.PowerCollections;
 
 public class FirstLastList<T> : IFirstLastList<T> where T : IComparable<T>
 {
+
+    private List<T> list;
+
+    public FirstLastList()
+    {
+        this.list = new List<T>();
+    }
+
     public int Count
     {
         get
         {
-            throw new NotImplementedException();
+            return this.list.Count;
         }
     }
 
     public void Add(T element)
     {
-        throw new NotImplementedException();
+        this.list.Add(element);
     }
 
     public void Clear()
     {
-        throw new NotImplementedException();
+        this.list.Clear();
     }
 
     public IEnumerable<T> First(int count)
     {
-        throw new NotImplementedException();
+        CheckRange(count);
+
+        for (int i = 0; i < count; i++)
+        {
+            yield return this.list[i];
+        }
     }
 
     public IEnumerable<T> Last(int count)
     {
-        throw new NotImplementedException();
+        CheckRange(count);
+
+        for (int i = this.list.Count-1 ; i >= this.list.Count - count; i--)
+        {
+            yield return this.list[i];
+        }
     }
 
     public IEnumerable<T> Max(int count)
     {
-        throw new NotImplementedException();
+        var newList = performInsertionSort(this.list.ToArray());
+
+        Array.Sort(newList, (a,b) => a.CompareTo(b));
+
+        Array.Reverse(newList);
+
+        CheckRange(count);
+
+        for (int i = 0; i < count; i++)
+        {
+            yield return newList[i];
+        }
     }
 
     public IEnumerable<T> Min(int count)
     {
-        throw new NotImplementedException();
+        this.list.Sort();
+        CheckRange(count);
+
+        for (int i = 0; i < count; i++)
+        {
+            yield return this.list[i];
+        }
     }
 
     public int RemoveAll(T element)
     {
-        throw new NotImplementedException();
+        int countRemoved = 0;
+        for (int i = 0; i < this.list.Count; i++)
+        {
+            if(this.list[i].CompareTo(element) == 0)
+            {
+                this.list.RemoveAt(i);
+                countRemoved++;
+                i--;
+            }
+        }
+
+        return countRemoved;
+    }
+
+    private void CheckRange(int count)
+    {
+        if (this.list.Count < count)
+        {
+            throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    static T[] performInsertionSort(T[] inputarray)
+    {
+        for (int i = 0; i < inputarray.Length - 1; i++)
+        {
+            int j = i + 1;
+
+            while (j > 0)
+            {
+                if (inputarray[j - 1].CompareTo(inputarray[j]) > 0)
+                {
+                    T temp = inputarray[j - 1];
+                    inputarray[j - 1] = inputarray[j];
+                    inputarray[j] = temp;
+
+                }
+                j--;
+            }
+        }
+        return inputarray;
     }
 }
