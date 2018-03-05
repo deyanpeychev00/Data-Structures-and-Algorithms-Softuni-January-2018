@@ -7,6 +7,7 @@ public class Computer : IComputer
 
     private List<Invader> records;
     private int energy;
+    private bool areRecordsSorted;
 
     public Computer(int energy)
     {
@@ -16,7 +17,7 @@ public class Computer : IComputer
             throw new ArgumentException();
         }
         this.energy = energy;
-
+        this.areRecordsSorted = false;
     }
 
     public int Energy
@@ -54,7 +55,12 @@ public class Computer : IComputer
             this.records.Clear();
             return;
         }
-        this.records.Sort();
+        if (!areRecordsSorted)
+        {
+            this.records.Sort();
+            areRecordsSorted = true;
+        }
+
         this.records.RemoveRange(0, count);
     }
 
