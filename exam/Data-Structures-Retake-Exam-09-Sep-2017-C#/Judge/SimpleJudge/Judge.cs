@@ -1,121 +1,105 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Judge : IJudge
 {
-    List<int> usersById, contestsById;
-    List<Submission> submissions;
-
-    bool usersSorted, contestsSorted, submissionsSorted;
+    Dictionary<int, Submission> bySubmissionID = new Dictionary<int, Submission>();
+    HashSet<int> users = new HashSet<int>();
+    HashSet<int> contests = new HashSet<int>();
 
     public Judge()
     {
-        this.usersById = this.contestsById = new List<int>();
-        this.submissions = new List<Submission>();
-        usersSorted = contestsSorted = submissionsSorted = false;
+
     }
 
     public void AddContest(int contestId)
     {
-        if (!this.contestsById.Contains(contestId))
-        {
-            this.contestsById.Add(contestId);
-        }
+        this.contests.Add(contestId);
     }
 
     public void AddSubmission(Submission submission)
     {
-        if(this.usersById.Contains(submission.UserId) || this.contestsById.Contains(submission.ContestId))
+        if (!this.bySubmissionID.ContainsKey(submission.Id))
+        {
+            return;
+        }
+        if(!this.users.Contains(submission.UserId) || !this.contests.Contains(submission.ContestId))
         {
             throw new InvalidOperationException();
         }
-        this.submissions.Add(submission);
+        this.bySubmissionID.Add(submission.Id, submission);
     }
 
     public void AddUser(int userId)
     {
-        if (!this.usersById.Contains(userId))
-        {
-            this.usersById.Add(userId);
-        }
+        this.users.Add(userId);
     }
 
     public void DeleteSubmission(int submissionId)
     {
-        this.submissions.RemoveAll(x => x.Id == submissionId);
+        // Submission submission = this.bySubmissionID[submissionId];
+        if (!this.bySubmissionID.ContainsKey(submissionId))
+        {
+            throw new InvalidOperationException();
+        }
+        this.bySubmissionID.Remove(submissionId);
     }
 
     public IEnumerable<Submission> GetSubmissions()
     {
-        if (!submissionsSorted)
-        {
-            this.submissions.Sort((a, b) => a.Id - b.Id);
-            submissionsSorted = true;
-        }
-        foreach (var submission in this.submissions)
-        {
-            yield return submission;
-        }
+        return this.bySubmissionID.Values.OrderBy(x => x.Id);
     }
 
     public IEnumerable<int> GetUsers()
     {
-        if (!usersSorted)
-        {
-            this.usersById.Sort();
-            usersSorted = true;
-        }
-      
-        foreach (var userId in this.usersById)
-        {
-            yield return userId;
-        }
+        return this.users.OrderBy(x => x);
     }
 
     public IEnumerable<int> GetContests()
     {
-        if (!contestsSorted)
-        {
-            this.contestsById.Sort();
-            contestsSorted = true;
-        }
-
-        foreach (var contestId in this.contestsById)
-        {
-            yield return contestId;
-        }
+        return this.contests.OrderBy(x => x);
     }
 
     public IEnumerable<Submission> SubmissionsWithPointsInRangeBySubmissionType(int minPoints, int maxPoints, SubmissionType submissionType)
     {
-        throw new NotImplementedException();
+        return this.bySubmissionID.Values.Where(x => 
+        x.Points >= minPoints && 
+        x.Points <= maxPoints && 
+        x.Type == submissionType);
     }
 
     public IEnumerable<int> ContestsByUserIdOrderedByPointsDescThenBySubmissionId(int userId)
     {
-        throw new NotImplementedException();
+        return this.bySubmissionID.Values
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.Points)
+            .ThenBy(x => x.Id)
+            .Select(x => x.ContestId)
+            .Distinct();
     }
 
     public IEnumerable<Submission> SubmissionsInContestIdByUserIdWithPoints(int points, int contestId, int userId)
     {
-        var result = this.submissions.FindAll(x => CheckCriterias(x, points, contestId, userId)).ToArray();
-        foreach (var element in result)
+        IEnumerable<Submission> result =  this.bySubmissionID.Values.Where(x => 
+        x.UserId == userId && 
+        x.Points == points && 
+        x.ContestId == contestId);
+
+        if (!result.Any())
         {
-            yield return element;
+            throw new InvalidOperationException();
         }
+
+        return result;
     }
 
-    private bool CheckCriterias(Submission x, int points, int contestId, int userId)
-    {
-        return x.UserId == userId && x.Points == points && x.ContestId == contestId;
-    }
 
     public IEnumerable<int> ContestsBySubmissionType(SubmissionType submissionType)
     {
-        var result = this.submissions.FindAll(x => x.Type.CompareTo(submissionType) == 0).ToArray();
-        foreach (var element in result)
-        {
-            yield return element.Id;
-        }
+        return this.bySubmissionID.Values
+            .Where(x => x.Type == submissionType)
+            .Select(x => x.ContestId)
+            .Distinct();
     }
 }

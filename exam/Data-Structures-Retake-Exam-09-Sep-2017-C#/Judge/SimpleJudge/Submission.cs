@@ -1,4 +1,4 @@
-﻿public class Submission
+﻿public class Submission : System.IComparable<Submission>
 {
     public int Id { get; set; }
 
@@ -17,5 +17,10 @@
         this.Type = type;
         this.ContestId = contestId;
         this.UserId = userId;
+    }
+
+    public int CompareTo(Submission other)
+    {
+        return this.Id.CompareTo(other.Id);
     }
 }
