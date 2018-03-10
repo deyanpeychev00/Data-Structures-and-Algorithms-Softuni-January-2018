@@ -49,19 +49,20 @@ public class Computer : IComputer
 
     public void DestroyHighestPriorityTargets(int count)
     {
-
-        if (this.records.Count < count)
+        // Destroy all targets
+        if (this.records.Count <= count)
         {
             this.records.Clear();
             return;
         }
+        // Sort records
         if (!areRecordsSorted)
         {
             this.records.Sort();
             areRecordsSorted = true;
         }
 
-        this.records.RemoveRange(0, count);
+        this.records = this.records.Skip(count).ToList();
     }
 
     public void DestroyTargetsInRadius(int radius)

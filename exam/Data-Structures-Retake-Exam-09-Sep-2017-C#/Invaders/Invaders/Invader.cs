@@ -13,6 +13,11 @@ public class Invader : IInvader
 
     public int CompareTo(IInvader other)
     {
-        return this.Distance.CompareTo(other.Distance) != 0 ? this.Distance.CompareTo(other.Distance) : other.Damage.CompareTo(this.Damage);
+        int compare = this.Distance.CompareTo(other.Distance);
+        if(compare == 0)
+        {
+            return other.Damage.CompareTo(this.Damage);
+        }
+        return compare;
     }
 }

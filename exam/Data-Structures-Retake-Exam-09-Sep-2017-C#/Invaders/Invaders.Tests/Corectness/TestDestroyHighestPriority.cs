@@ -36,7 +36,7 @@ public class TestDestroyHighestPriority
     [TestMethod]
     [Timeout(200)]
     public void DestroyHighestPriority_MultipleTargets()
-    {
+     {
         Random random = new Random();
         Computer computer = new Computer(100);
         List<Invader> expected = new List<Invader>();
